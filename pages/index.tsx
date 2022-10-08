@@ -34,7 +34,7 @@ export default function Home() {
                     'Content-Type': 'application/json',
                 },
                 body: JSON.stringify({
-                    enable: nextState,
+                    enabled: nextState,
                 }),
             })
                 .then((response) => response.json())

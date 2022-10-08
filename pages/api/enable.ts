@@ -9,11 +9,44 @@ type ResponseData = {
     message: string;
 };
 
+type Config = {
+    enabled: boolean;
+};
+
+const pollInterval = 250;
+let monitor: NodeJS.Timer | undefined = undefined;
+
+const detectMotion = () => {
+    console.log('reading...');
+};
+
+const start = () => {
+    monitor = setInterval(detectMotion, pollInterval);
+    console.log(`Started interval ${monitor}`);
+};
+
+const stop = () => {
+    if (monitor) {
+        clearInterval(monitor);
+        console.log(`Stopped interval ${monitor}`);
+    }
+};
+
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
     try {
         if (req.method === 'POST') {
-            const body = req.body;
-            console.log({ body });
+            const body = req.body as Config;
+
+            console.log({ body, enabled: body?.enabled });
+
+            if (body?.enabled) {
+                start();
+                console.log('starting...');
+            } else {
+                stop();
+                console.log('stopping...');
+            }
+
             try {
                 fs.promises.writeFile(fullFilePath, JSON.stringify(body));
                 console.log(`Successfully wrote to ${fullFilePath}`);
