@@ -1,9 +1,10 @@
-import { Button, Typography } from '@mui/material';
+import { BugReport, Visibility, VisibilityOff } from '@mui/icons-material';
+import { Button, Grid, Typography } from '@mui/material';
+import { Container } from '@mui/system';
 import Layout from 'components/Layout';
 import { APP_DESCRIPTION, APP_NAME } from 'lib/config';
 import Head from 'next/head';
 import { useState } from 'react';
-import { ResponseData } from 'types/api';
 
 export default function Home() {
     const [enabled, setEnabled] = useState(false);
@@ -54,13 +55,36 @@ export default function Home() {
                 <link rel="icon" href="/favicon.ico" />
             </Head>
             <Layout>
-                <Button variant="contained" color="primary" onClick={toggleStart}>
-                    {enabled ? 'Disable' : 'Enable'}
-                </Button>
-                <Button variant="contained" color="primary" onClick={handleStatus}>
-                    Status
-                </Button>
-                <Typography>{response}</Typography>
+                <Container maxWidth="md">
+                    <Grid container spacing={2} justifyContent="center">
+                        <Grid item xs>
+                            <Button
+                                fullWidth
+                                startIcon={<BugReport />}
+                                variant="contained"
+                                color="primary"
+                                onClick={handleStatus}
+                            >
+                                Status
+                            </Button>
+                        </Grid>
+                        <Grid item xs>
+                            <Button
+                                fullWidth
+                                startIcon={enabled ? <VisibilityOff /> : <Visibility />}
+                                variant="contained"
+                                color="primary"
+                                onClick={toggleStart}
+                            >
+                                {enabled ? 'Disable' : 'Enable'}
+                            </Button>
+                        </Grid>
+
+                        <Grid item xs={12}>
+                            <Typography textAlign="center">{response}</Typography>
+                        </Grid>
+                    </Grid>
+                </Container>
             </Layout>
         </>
     );
