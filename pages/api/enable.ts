@@ -2,9 +2,17 @@ import { NextApiResponse, NextApiRequest } from 'next';
 import fs from 'fs';
 import path from 'path';
 import sound from 'sound-play';
+import { Gpio } from 'onoff'; // include onoff to interact with the GPIO
 
 const filePath = 'data.json';
 const fullFilePath = path.join(__dirname, filePath);
+
+const pollInterval = 250;
+const motionPin = 14;
+const isLinux = process.platform === 'linux';
+// use GPIO pin 4, and specify that it is output
+const SENSOR: Gpio | undefined = isLinux ? new Gpio(motionPin, 'in') : undefined;
+let monitor: NodeJS.Timer | undefined = undefined;
 
 type ResponseData = {
     message: string;
@@ -14,49 +22,63 @@ type Config = {
     enabled: boolean;
 };
 
-const pollInterval = 250;
-let monitor: NodeJS.Timer | undefined = undefined;
-
 const playSound = () => {
     const soundFile = path.join('public', 'sounds', 'Mark_Hamill_Joker.wav');
     sound.play(soundFile);
 };
 
 const detectMotion = () => {
-    console.log('reading...');
+    if (isLinux && SENSOR) {
+        // Check the pin state 1 = on
+        try {
+            if (SENSOR.readSync() === 1) {
+                console.log('Motion Detected!!!!');
+                playSound();
+            } else {
+                console.log('Watching...');
+            }
+        } catch (error) {
+            console.log('detectMotion', { error });
+        }
+    } else {
+        console.log(`Current platform is "${process.platform}". GPIO will only work on linux.`);
+    }
 };
 
-const start = () => {
+const startSpotting = () => {
+    try {
+        console.log(`GPIO accessible: ${Gpio?.accessible}`);
+    } catch (error) {
+        console.log({ error });
+    }
     monitor = setInterval(detectMotion, pollInterval);
     console.log(`Started interval ${monitor}`);
 };
 
-const stop = () => {
+const stopSpotting = () => {
     if (monitor) {
         clearInterval(monitor);
         console.log(`Stopped interval ${monitor}`);
+    }
+
+    if (SENSOR) {
+        SENSOR.unexport(); // Unexport GPIO to free resources
     }
 };
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse<ResponseData>) {
     try {
         if (req.method === 'POST') {
-            const body = req.body as Config;
-
-            console.log({ body, enabled: body?.enabled });
-
-            if (body?.enabled) {
-                playSound();
-                // start();
-                console.log('starting...');
-            } else {
-                // stop();
-                console.log('stopping...');
-            }
-
             try {
+                const body = req.body as Config;
+
+                if (body?.enabled) {
+                    startSpotting();
+                } else {
+                    stopSpotting();
+                }
+
                 fs.promises.writeFile(fullFilePath, JSON.stringify(body));
-                console.log(`Successfully wrote to ${fullFilePath}`);
                 res.status(200).send({ message: 'success' });
             } catch (error) {
                 console.log(error);
