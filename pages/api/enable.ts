@@ -1,6 +1,7 @@
 import { NextApiResponse, NextApiRequest } from 'next';
 import fs from 'fs';
 import path from 'path';
+import sound from 'sound-play';
 
 const filePath = 'data.json';
 const fullFilePath = path.join(__dirname, filePath);
@@ -15,6 +16,11 @@ type Config = {
 
 const pollInterval = 250;
 let monitor: NodeJS.Timer | undefined = undefined;
+
+const playSound = () => {
+    const soundFile = path.join('public', 'sounds', 'Mark_Hamill_Joker.wav');
+    sound.play(soundFile);
+};
 
 const detectMotion = () => {
     console.log('reading...');
@@ -40,10 +46,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse<
             console.log({ body, enabled: body?.enabled });
 
             if (body?.enabled) {
-                start();
+                playSound();
+                // start();
                 console.log('starting...');
             } else {
-                stop();
+                // stop();
                 console.log('stopping...');
             }
 
