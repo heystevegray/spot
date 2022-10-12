@@ -14,6 +14,8 @@ const isLinux = process.platform === 'linux';
 const SENSOR: Gpio | undefined = isLinux ? new Gpio(motionPin, 'in') : undefined;
 let monitor: NodeJS.Timer | undefined = undefined;
 
+let isPlaying = false;
+
 type ResponseData = {
     message: string;
 };
@@ -24,21 +26,29 @@ type Config = {
 
 const playSound = () => {
     const soundFile = path.join('public', 'sounds', 'Mark_Hamill_Joker.wav');
-    sound.play(soundFile);
+    sound.play(soundFile).then(() => {
+        // Audio file is done
+        isPlaying = false;
+    });
 };
 
 const detectMotion = () => {
     if (isLinux && SENSOR) {
-        // Check the pin state 1 = on
-        try {
-            if (SENSOR.readSync() === 1) {
-                console.log('Motion Detected!!!!');
-                playSound();
-            } else {
-                console.log('Watching...');
+        if (!isPlaying) {
+            // Check the pin state 1 = on
+            try {
+                if (SENSOR.readSync() === 1) {
+                    console.log('Motion Detected!!!!');
+                    isPlaying = true;
+                    playSound();
+                } else {
+                    console.log('Watching...');
+                }
+            } catch (error) {
+                console.log('detectMotion', { error });
             }
-        } catch (error) {
-            console.log('detectMotion', { error });
+        } else {
+            console.log('Sound is playing...');
         }
     } else {
         console.log(`Current platform is "${process.platform}". GPIO will only work on linux.`);
