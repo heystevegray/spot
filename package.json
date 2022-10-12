@@ -5,6 +5,7 @@
         "dev": "next dev",
         "build": "next build",
         "start": "next start",
+        "serve": "git pull && npm run build && next start",
         "lint": "next lint",
         "format": "prettier --write .",
         "type-check": "tsc"

@@ -5,7 +5,7 @@ import sound from 'sound-play';
 import { Gpio } from 'onoff'; // include onoff to interact with the GPIO
 
 const filePath = 'data.json';
-const fullFilePath = path.join(__dirname, filePath);
+const fullFilePath = path.join('public', filePath);
 
 const pollInterval = 250;
 const motionPin = 14;
