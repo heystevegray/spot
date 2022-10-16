@@ -7,6 +7,7 @@ const player = require('play-sound')()
 
 const filePath = 'data.json';
 const fullFilePath = path.join('public', filePath);
+const sounds = ['Mark_Hamill_Joker.wav', 'Thriller_Laugh.wav']
 
 const pollInterval = 250;
 const motionPin = 14;
@@ -27,8 +28,13 @@ type Config = {
     enabled: boolean;
 };
 
+const getRandomSound = (): string => {
+    const soundFile = sounds[Math.round(Math.random())]
+    return path.join('public', 'sounds', soundFile)
+}
+
 const playSound = () => {
-    const soundFile = path.join('public', 'sounds', 'Mark_Hamill_Joker.wav');
+    const soundFile = getRandomSound();
 
     try {
         audio = player.play(soundFile, function (err: { killed: any; }) {
